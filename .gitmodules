@@ -4,3 +4,6 @@
 [submodule "roscpp_code_format"]
 	path = roscpp_code_format
 	url = https://github.com/davetcoleman/roscpp_code_format.git
+[submodule "oscc"]
+	path = oscc
+	url = git@github.com:frk2/oscc.git
