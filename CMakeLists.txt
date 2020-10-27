@@ -11,7 +11,9 @@ else ()
   set (CMAKE_CXX_STANDARD 11)
 endif ()
 
+
 include(oscc/api/OsccConfig.cmake)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
