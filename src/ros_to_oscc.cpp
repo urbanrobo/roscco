@@ -11,10 +11,10 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 
   // Temporary block of OSCC SIGIO while initializing ROS publication to prevent
   // signal conflicts
-  if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0)
-  {
-    ROS_ERROR("Failed to block SIGIO");
-  }
+//  if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0)
+//  {
+//    ROS_ERROR("Failed to block SIGIO");
+//  }
 
   topic_brake_command_ =
       public_nh->subscribe<roscco::BrakeCommand>("brake_command", 10, &RosToOscc::brakeCommandCallback, this);
@@ -28,10 +28,10 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
   topic_enable_disable_command_ =
       public_nh->subscribe<roscco::EnableDisable>("enable_disable", 10, &RosToOscc::enableDisableCallback, this);
 
-  if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
-  {
-    ROS_ERROR("Failed to unblock SIGIO");
-  }
+//  if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
+//  {
+//    ROS_ERROR("Failed to unblock SIGIO");
+//  }
 };
 
 void RosToOscc::brakeCommandCallback(const roscco::BrakeCommand::ConstPtr& msg)
@@ -87,7 +87,8 @@ void RosToOscc::enableDisableCallback(const roscco::EnableDisable::ConstPtr& msg
   oscc_result_t ret = OSCC_ERROR;
 
   ret = msg->enable_control ? oscc_enable() : oscc_disable();
-
+  ROS_ERROR("Got enable disable");
+		 
   if (ret == OSCC_ERROR)
   {
     ROS_ERROR("OSCC_ERROR occured while trying to enable or disable control.");
