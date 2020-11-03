@@ -11,10 +11,10 @@ OsccToRos::OsccToRos(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 
   // Temporary block of OSCC SIGIO while initializing ROS subscription to
   // prevent signal conflicts
-  if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0)
-  {
-    ROS_ERROR("Failed to block SIGIO");
-  }
+  // if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0)
+  // {
+  //   ROS_ERROR("Failed to block SIGIO");
+  // }
 
   topic_brake_report_ = public_nh->advertise<roscco::BrakeReport>("brake_report", 10);
 
@@ -26,10 +26,10 @@ OsccToRos::OsccToRos(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 
   topic_obd_messages_ = public_nh->advertise<roscco::CanFrame>("can_frame", 10);
 
-  if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
-  {
-    ROS_ERROR("Failed to unblock SIGIO");
-  }
+  // if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
+  // {
+  //   ROS_ERROR("Failed to unblock SIGIO");
+  // }
 
   oscc_subscribe_to_brake_reports(brake_callback);
 
