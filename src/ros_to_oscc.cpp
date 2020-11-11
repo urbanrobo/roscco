@@ -2,15 +2,15 @@
 
 RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 {
-  sigset_t mask;
-  sigset_t orig_mask;
+//   sigset_t mask;
+//   sigset_t orig_mask;
 
-  sigemptyset(&mask);
-  sigemptyset(&orig_mask);
-  sigaddset(&mask, SIGIO);
+//   sigemptyset(&mask);
+//   sigemptyset(&orig_mask);
+//   sigaddset(&mask, SIGIO);
 
-  // Temporary block of OSCC SIGIO while initializing ROS publication to prevent
-  // signal conflicts
+//   // Temporary block of OSCC SIGIO while initializing ROS publication to prevent
+//   // signal conflicts
 //  if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0)
 //  {
 //    ROS_ERROR("Failed to block SIGIO");

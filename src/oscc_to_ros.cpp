@@ -1,16 +1,16 @@
 #include <roscco/oscc_to_ros.h>
-
+#include <thread>
 OsccToRos::OsccToRos(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 {
-  sigset_t mask;
-  sigset_t orig_mask;
+  // sigset_t mask;
+  // sigset_t orig_mask;
 
-  sigemptyset(&mask);
-  sigemptyset(&orig_mask);
-  sigaddset(&mask, SIGIO);
+  // sigemptyset(&mask);
+  // sigemptyset(&orig_mask);
+  // sigaddset(&mask, SIGIO);
 
-  // Temporary block of OSCC SIGIO while initializing ROS subscription to
-  // prevent signal conflicts
+  // // Temporary block of OSCC SIGIO while initializing ROS subscription to
+  // // prevent signal conflicts
   // if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0)
   // {
   //   ROS_ERROR("Failed to block SIGIO");

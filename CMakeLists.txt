@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roscco)
-
+#set (CMAKE_BUILD_TYPE Debug)
 ## Compile as C++11, supported in ROS Kinetic and newer
 ## C++11 is required for rapidcheck
 if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -100,11 +100,13 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}_oscc_to_ros
   oscc_api
+  pthread
 )
 
 target_link_libraries(
   ${PROJECT_NAME}_ros_to_oscc
   oscc_api
+  pthread
 )
 
 add_dependencies(
@@ -139,6 +141,7 @@ target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}_ros_to_oscc
   ${PROJECT_NAME}_oscc_to_ros
   ${catkin_LIBRARIES}
+  pthread
 )
 
 if(EXAMPLE)
