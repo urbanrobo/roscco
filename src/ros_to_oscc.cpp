@@ -35,7 +35,7 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 };
 
 // struct to enable detection of a rising or falling e_stop flag.
-struct e_stop_status() {
+struct e_stop_status {
     bool current_e_stop_message{false};
     bool previous_e_stop_message{false};
     bool e_stop{false};
@@ -144,7 +144,7 @@ void RosToOscc::enableDisableCallback(const roscco::EnableDisable::ConstPtr& msg
   }
 }
 
-void RosToOscc::estopCallback(const ros::Bool msg)
+void RosToOscc::estopCallback(const std_msgs::Bool msg)
 {
     // move the "current" bool to the "previous" bool in the e_stop_status_ class var.
     e_stop_status_.setPrevious();

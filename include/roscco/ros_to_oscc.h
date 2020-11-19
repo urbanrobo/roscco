@@ -73,7 +73,7 @@ public:
    *
    * @param msg ROS boolean message to be consumed.
    */
-    void estopCallback(const ros::Bool &msg);
+    void estopCallback(const std_msgs::Bool &msg);
 
 private:
   ros::Subscriber topic_brake_command_;
