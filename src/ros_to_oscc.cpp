@@ -34,6 +34,51 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 //  }
 };
 
+// struct to enable detection of a rising or falling e_stop flag.
+struct e_stop_status() {
+    bool current_e_stop_message{false};
+    bool previous_e_stop_message{false};
+    bool e_stop{false};
+
+    void setPrevious() {
+        previous_e_stop_message = current_e_stop_message;
+    }
+
+    bool isRising() {
+        if((!previous_e_stop_message) && current_e_stop_message) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    bool isFalling() {
+        if(previous_e_stop_message && (!current_e_stop_message)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    void checkForEvent() {
+        if (isRising()) {
+            e_stop = true;
+            ROS_DEBUG("OSCC_NODE: an emergency stop has been requested");
+        }
+        else if (isFalling) {
+            e_stop = false;
+            ROS_DEBUG("OSCC_NODE: an emergency stop has been cancelled");
+        }
+
+        if (e_stop != current_e_stop_message) {
+            ROS_ERROR("OSCC_NODE: logical error in e-stop transition");
+            e_stop = current_e_stop_message;
+        }
+    }
+}
+
 void RosToOscc::brakeCommandCallback(const roscco::BrakeCommand::ConstPtr& msg)
 {
   oscc_result_t ret = OSCC_ERROR;
@@ -97,4 +142,15 @@ void RosToOscc::enableDisableCallback(const roscco::EnableDisable::ConstPtr& msg
   {
     ROS_WARN("OSCC_WARNING occured while trying to enable or disable control.");
   }
+}
+
+void RosToOscc::estopCallback(const ros::Bool msg)
+{
+    // move the "current" bool to the "previous" bool in the e_stop_status_ class var.
+    e_stop_status_.setPrevious();
+    // set the new current bool from the incoming message.
+    e_stop_status_.current_e_stop_message = msg.data;
+
+    // process current and previous data to check for a rising or falling signal.
+    e_stop_status_.checkForEvent();
 }

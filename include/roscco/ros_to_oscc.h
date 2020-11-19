@@ -13,6 +13,9 @@ extern "C" {
 #include <roscco/EnableDisable.h>
 #include <roscco/SteeringCommand.h>
 #include <roscco/ThrottleCommand.h>
+#include <std_msgs/Bool.h>
+
+
 
 class RosToOscc
 {
@@ -63,6 +66,15 @@ public:
    */
   void enableDisableCallback(const roscco::EnableDisable::ConstPtr& msg);
 
+  /**
+   * @brief Callback function to listen to the e-stop request signal.
+   *
+   * This function is a callback that consumes a ROS boolean message and sets a boolean class variable.
+   *
+   * @param msg ROS boolean message to be consumed.
+   */
+    void estopCallback(const ros::Bool &msg);
+
 private:
   ros::Subscriber topic_brake_command_;
 
@@ -71,6 +83,10 @@ private:
   ros::Subscriber topic_throttle_command_;
 
   ros::Subscriber topic_enable_disable_command_;
+
+  ros::Subscriber e_stop_command_;
+
+  e_stop_status e_stop_status_;
 };
 
 #endif  // ROS_TO_OSCC_H
