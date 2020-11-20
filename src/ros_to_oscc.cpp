@@ -29,7 +29,7 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
       public_nh->subscribe<roscco::ThrottleCommand>("throttle_command", 10, &RosToOscc::throttleCommandCallback, this);
 
   topic_enable_disable_command_ =
-      public_nh->subscribe<roscco::EnableDisable>("enable_disable", 10, &RosToOscc::enableDisableCallback, this);
+      public_nh->subscribe<std_msgs::Bool>("enable_disable", 10, &RosToOscc::enableDisableCallback, this);
 
   e_stop_command_ =
       public_nh->subscribe<roscco::EnableDisable>("e_stop_request", 10, &RosToOscc::eStopCallback, this);
