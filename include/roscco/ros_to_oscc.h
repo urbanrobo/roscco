@@ -15,7 +15,50 @@ extern "C" {
 #include <roscco/ThrottleCommand.h>
 #include <std_msgs/Bool.h>
 
+// struct to enable detection of a rising or falling e_stop flag.
+struct e_stop_status {
+    bool current_e_stop_message{false};
+    bool previous_e_stop_message{false};
+    bool e_stop{false};
 
+    void setPrevious() {
+        previous_e_stop_message = current_e_stop_message;
+    }
+
+    bool isRising() {
+        if((!previous_e_stop_message) && current_e_stop_message) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    bool isFalling() {
+        if(previous_e_stop_message && (!current_e_stop_message)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    void checkForEvent() {
+        if (isRising()) {
+            e_stop = true;
+            ROS_DEBUG("OSCC_NODE: an emergency stop has been requested");
+        }
+        else if (isFalling()) {
+            e_stop = false;
+            ROS_DEBUG("OSCC_NODE: an emergency stop has been cancelled");
+        }
+
+        if (e_stop != current_e_stop_message) {
+            ROS_ERROR("OSCC_NODE: logical error in e-stop transition");
+            e_stop = current_e_stop_message;
+        }
+    }
+};
 
 class RosToOscc
 {
@@ -73,7 +116,7 @@ public:
    *
    * @param msg ROS boolean message to be consumed.
    */
-    void estopCallback(const std_msgs::Bool &msg);
+    void eStopCallback(const std_msgs::Bool &msg);
 
 private:
   ros::Subscriber topic_brake_command_;

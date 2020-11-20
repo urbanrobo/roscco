@@ -1,5 +1,8 @@
 #include <roscco/ros_to_oscc.h>
 
+const double E_STOP_BRAKE_COMMAND = 0.4;
+const double E_STOP_ACCEL_COMMAND = 0;
+
 RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 {
 //   sigset_t mask;
@@ -34,53 +37,26 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 //  }
 };
 
-// struct to enable detection of a rising or falling e_stop flag.
-struct e_stop_status {
-    bool current_e_stop_message{false};
-    bool previous_e_stop_message{false};
-    bool e_stop{false};
-
-    void setPrevious() {
-        previous_e_stop_message = current_e_stop_message;
-    }
-
-    bool isRising() {
-        if((!previous_e_stop_message) && current_e_stop_message) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    bool isFalling() {
-        if(previous_e_stop_message && (!current_e_stop_message)) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    void checkForEvent() {
-        if (isRising()) {
-            e_stop = true;
-            ROS_DEBUG("OSCC_NODE: an emergency stop has been requested");
-        }
-        else if (isFalling) {
-            e_stop = false;
-            ROS_DEBUG("OSCC_NODE: an emergency stop has been cancelled");
-        }
-
-        if (e_stop != current_e_stop_message) {
-            ROS_ERROR("OSCC_NODE: logical error in e-stop transition");
-            e_stop = current_e_stop_message;
-        }
-    }
-}
-
 void RosToOscc::brakeCommandCallback(const roscco::BrakeCommand::ConstPtr& msg)
 {
+  // if e_stop then bring the car to a stop. by sending a predefined brake and accel command.
+  if (e_stop_status_.e_stop) {
+      oscc_result_t brake_ret = OSCC_ERROR;
+      oscc_result_t accel_ret = OSCC_ERROR;
+
+      brake_ret = oscc_publish_brake_position(E_STOP_BRAKE_COMMAND);
+      accel_ret = oscc_publish_throttle_position(E_STOP_ACCEL_COMMAND);
+
+      if (brake_ret == OSCC_ERROR)
+      {
+          ROS_ERROR("OSCC_ERROR: occured while trying send the brake position. DURING E_STOP!!");
+      }
+      if (accel_ret == OSCC_ERROR)
+      {
+          ROS_ERROR("OSCC_ERROR: occured while trying send the accel position. DURING E_STOP!!");
+      }
+      return;
+  }
   oscc_result_t ret = OSCC_ERROR;
 
   ret = oscc_publish_brake_position(msg->brake_position);
@@ -109,10 +85,41 @@ void RosToOscc::steeringCommandCallback(const roscco::SteeringCommand::ConstPtr&
   {
     ROS_WARN("OSCC_WARNING occured while trying send the steering torque.");
   }
+
+  // if e_stop then bring the car to a stop.
+  if (e_stop_status_.e_stop) {
+      oscc_result_t brake_ret = OSCC_ERROR;
+      oscc_result_t accel_ret = OSCC_ERROR;
+
+      brake_ret = oscc_publish_brake_position(E_STOP_BRAKE_COMMAND);
+      accel_ret = oscc_publish_throttle_position(E_STOP_ACCEL_COMMAND);
+
+      if (brake_ret == OSCC_ERROR)
+      {
+          ROS_ERROR("OSCC_ERROR: occured while trying send the brake position. DURING E_STOP!!");
+      }
+      if (accel_ret == OSCC_ERROR)
+      {
+          ROS_ERROR("OSCC_ERROR: occured while trying send the accel position. DURING E_STOP!!");
+      }
+  }
 };
 
 void RosToOscc::throttleCommandCallback(const roscco::ThrottleCommand::ConstPtr& msg)
 {
+  // if e_stop is active, bypass the teleop command.
+  if (e_stop_status_.e_stop) {
+      oscc_result_t ret = OSCC_ERROR;
+
+      ret = oscc_publish_brake_position(E_STOP_BRAKE_COMMAND);
+
+      if (ret == OSCC_ERROR)
+      {
+          ROS_ERROR("OSCC_ERROR: occured while trying send the brake position. DURING E_STOP!!");
+      }
+      return;
+  }
+
   oscc_result_t ret = OSCC_ERROR;
 
   ret = oscc_publish_throttle_position(msg->throttle_position);
@@ -144,7 +151,7 @@ void RosToOscc::enableDisableCallback(const roscco::EnableDisable::ConstPtr& msg
   }
 }
 
-void RosToOscc::estopCallback(const std_msgs::Bool msg)
+void RosToOscc::eStopCallback(const std_msgs::Bool &msg)
 {
     // move the "current" bool to the "previous" bool in the e_stop_status_ class var.
     e_stop_status_.setPrevious();
@@ -153,4 +160,22 @@ void RosToOscc::estopCallback(const std_msgs::Bool msg)
 
     // process current and previous data to check for a rising or falling signal.
     e_stop_status_.checkForEvent();
+
+    // if e_stop then bring the car to a stop.
+    if (e_stop_status_.e_stop) {
+        oscc_result_t brake_ret = OSCC_ERROR;
+        oscc_result_t accel_ret = OSCC_ERROR;
+
+        brake_ret = oscc_publish_brake_position(E_STOP_BRAKE_COMMAND);
+        accel_ret = oscc_publish_throttle_position(E_STOP_ACCEL_COMMAND);
+
+        if (brake_ret == OSCC_ERROR)
+        {
+            ROS_ERROR("OSCC_ERROR: occured while trying send the brake position. DURING E_STOP!!");
+        }
+        if (accel_ret == OSCC_ERROR)
+        {
+            ROS_ERROR("OSCC_ERROR: occured while trying send the accel position. DURING E_STOP!!");
+        }
+    }
 }
