@@ -31,6 +31,9 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
   topic_enable_disable_command_ =
       public_nh->subscribe<roscco::EnableDisable>("enable_disable", 10, &RosToOscc::enableDisableCallback, this);
 
+  e_stop_command_ =
+      public_nh->subscribe<roscco::EnableDisable>("e_stop_request", 10, &RosToOscc::eStopCallback, this);
+
 //  if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
 //  {
 //    ROS_ERROR("Failed to unblock SIGIO");
@@ -39,7 +42,7 @@ RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
 
 void RosToOscc::brakeCommandCallback(const roscco::BrakeCommand::ConstPtr& msg)
 {
-  // if e_stop then bring the car to a stop. by sending a predefined brake and accel command.
+  // if e_stop then bypass the teleop command and bring the car to a stop.
   if (e_stop_status_.e_stop) {
       oscc_result_t brake_ret = OSCC_ERROR;
       oscc_result_t accel_ret = OSCC_ERROR;
@@ -151,17 +154,17 @@ void RosToOscc::enableDisableCallback(const roscco::EnableDisable::ConstPtr& msg
   }
 }
 
-void RosToOscc::eStopCallback(const std_msgs::Bool &msg)
+void RosToOscc::eStopCallback(const std_msgs::Bool::ConstPtr& msg)
 {
     // move the "current" bool to the "previous" bool in the e_stop_status_ class var.
     e_stop_status_.setPrevious();
     // set the new current bool from the incoming message.
-    e_stop_status_.current_e_stop_message = msg.data;
+    e_stop_status_.current_e_stop_message = msg->data;
 
     // process current and previous data to check for a rising or falling signal.
     e_stop_status_.checkForEvent();
 
-    // if e_stop then bring the car to a stop.
+    // if e_stop is requested, then bring the car to a stop.
     if (e_stop_status_.e_stop) {
         oscc_result_t brake_ret = OSCC_ERROR;
         oscc_result_t accel_ret = OSCC_ERROR;
