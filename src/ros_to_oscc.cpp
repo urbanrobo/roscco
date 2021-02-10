@@ -62,8 +62,8 @@ void RosToOscc::brakeCommandCallback(const roscco::BrakeCommand::ConstPtr& msg)
 void RosToOscc::steeringCommandCallback(const roscco::SteeringCommand::ConstPtr& msg)
 {
   oscc_result_t ret = OSCC_ERROR;
-
-  ret = oscc_publish_steering_torque(msg->steering_torque);
+  double inverted_steering_command = msg->steering_torque;
+  ret = oscc_publish_steering_torque(inverted_steering_command);
 
   if (ret == OSCC_ERROR)
   {
